@@ -75,6 +75,10 @@ def vigenere_standard(text, key, opt):
         new_text = new_text.lower()
     return new_text
 
+def vigenere_running(text, opt):
+    key = load_plain_text('pembukaanUUD1945.txt')
+    return vigenere_standard(text, key, opt)
+
 def split_text(text, length):
     lists = []
     start_pos = 0
@@ -361,12 +365,10 @@ def transpose_enc_dec(text, key, prev_key, opt):
         # print(res)
         res_text = ''.join(res)
         final_res = res_text if (len(text)-len(prev_key) == 0) else res_text[:-(len(text)-len(prev_key))]
-        return(final_res)
-        
-        
-        
+        return(final_res)    
 
 def super_encrypt(text, key, opt):
+    res = ""
     if(opt == 0):
         temp_text = clear_text(text).upper()
         new_key = generate_key_repeat(temp_text, key).upper()
@@ -374,7 +376,6 @@ def super_encrypt(text, key, opt):
         save_file('temp_keystore.txt', new_key)
         temp = vigenere_standard(text, key, opt) 
         res = transpose_enc_dec(temp,new_key, new_key, opt)
-        return res
     else:
         temp_text = clear_text(text).upper()
         new_key = generate_key_repeat(temp_text, key).upper()
@@ -382,9 +383,36 @@ def super_encrypt(text, key, opt):
         print(prev_key)
         temp_res = transpose_enc_dec(temp_text, new_key, prev_key, opt)
         res = vigenere_standard(temp_res, key, opt)
-        return res
-    # else:
+    return res
 
+def inverse_modulo(m, n):
+    for i in range(n):
+        if ( (m * i) % n == 1 ):
+            return i
+
+def affine_cipher(text, key, opt):
+    res = ""
+    text = text.upper()
+    # print(text)
+    keys = key.split(" ")
+    if(opt == 0):
+        for i in range(len(text)):
+            if(text[i] != ' '):
+                res += chr(65 + ((ord(text[i])-65) * int(keys[0]) + int(keys[1])) % 26)
+            else:
+                res += ' '
+    else:
+        inv = inverse_modulo(int(keys[0]), 26)
+        # print(inv)
+        for i in range(len(text)):
+            # print(inv, ord(text[i])-65, keys[1], (inv * (ord(text[i])-65 - int(keys[1]))))
+            if(text[i] != ' '):
+                res += chr(65 + (inv * (ord(text[i])-65 - int(keys[1]))) % 26)
+            else:
+                res += ' '
+
+    # print(res.lower())
+    return res.lower()
 
 def PartitionN(text='', num=0):
     result = []
@@ -470,7 +498,6 @@ def InverseModulo(value=0):
 
     return i
 
-
 if __name__ == "__main__":
     # temp = load_plain_text("README.md")
     # print(temp)
@@ -479,4 +506,5 @@ if __name__ == "__main__":
     # print(generate_key_repeat("testtests", "test"))
     # print(generate_full_vigenere_key())
     # vigenere_full("OXAU", "temp", 1)
-    print(super_encrypt("MIIEEIIMMZ", "temp", 1))
+    # print(super_encrypt("MIIEEIIMMZ", "temp", 1))
+    print(affine_cipher("hkzo oxo oxfkh","7 10",1))
