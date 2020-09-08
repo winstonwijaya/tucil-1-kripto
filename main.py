@@ -163,8 +163,8 @@ class Crypto():
     @staticmethod
     def PlayfairCipherEncrypt(plaintext='', key=''):
         matrix = PlayfairKeyMatrix(key)
-        # PrintMatrix(matrix)
         plaintext = clear_text(plaintext).upper()
+        plaintext = plaintext.replace('J','I')
         bigram = []
         cipher = ''
         
@@ -178,14 +178,10 @@ class Crypto():
             else:
                 bigram.append(plaintext[0:2])
                 plaintext = plaintext[2:]
-        # print(bigram)
         
-        for i,each in enumerate(bigram):
+        for each in bigram:
             loc_first = FindPositionMatrix(matrix,each[0])
             loc_second = FindPositionMatrix(matrix,each[1])
-
-            if i:
-                cipher += ' '
             
             # RULES
             if loc_first[0] == loc_second[0]:
@@ -217,8 +213,7 @@ class Crypto():
     @staticmethod
     def PlayfairCipherDecrypt(ciphertext='', key=''):
         matrix = PlayfairKeyMatrix(key)
-        # PrintMatrix(matrix)
-        ciphertext = ciphertext.split(' ')
+        ciphertext = PartitionN(ciphertext,2)
         plainlist = []
         plaintext = ''
         
@@ -270,6 +265,66 @@ class Crypto():
         if (len(plaintext)+removed) % 2 == 0:
             plaintext = plaintext[:-1]
         
+        return plaintext
+
+    @staticmethod
+    def HillCipherEncrypt(plaintext='', key=''):
+        plaintext = clear_text(plaintext).upper()
+        if len(plaintext) % 3 != 0:
+            return 'CAN\'T ENCRYPT, PLAIN TEXT\'S LENGTH IS NOT MULTIPLIER OF 3'
+
+        key = key.split(' ')
+        if len(key) != 9 or not IsAllNumber(key):
+            return 'CAN\'T ENCRYPT, KEY MUST BE 9 NUMBER SEPERATED BY SPACE'
+
+        matrix = HillKeyMatrix(key)
+        plaintext = PartitionN(plaintext,3)
+        ciphertext = ''
+
+        for each in plaintext:
+            each_num = [
+                AlphabetToNumber(each[0]),
+                AlphabetToNumber(each[1]),
+                AlphabetToNumber(each[2])
+            ]
+
+            result = HillMatrixDot(matrix,each_num)
+            ciphertext += NumberToAlphabet(result[0]%26)
+            ciphertext += NumberToAlphabet(result[1]%26)
+            ciphertext += NumberToAlphabet(result[2]%26)
+
+        return ciphertext
+
+    @staticmethod
+    def HillCipherDecrypt(ciphertext='', key=''):
+        ciphertext = clear_text(ciphertext).upper()
+        if len(ciphertext) % 3 != 0:
+            return 'CAN\'T DECRYPT, CIPHERTEXT\'S LENGTH IS NOT MULTIPLIER OF 3'
+
+        key = key.split(' ')
+        if len(key) != 9 or not IsAllNumber(key):
+            return 'CAN\'T DECRYPT, KEY MUST BE 9 NUMBER SEPERATED BY SPACE'
+        
+        matrix = HillKeyMatrix(key)
+        matrix = HillInverseMatrix(matrix)
+        if matrix==False:
+            return 'CAN\'T DECRYPT, WRONG KEY'
+
+        ciphertext = PartitionN(ciphertext,3)
+        plaintext = ''
+
+        for each in ciphertext:
+            each_num = [
+                AlphabetToNumber(each[0]),
+                AlphabetToNumber(each[1]),
+                AlphabetToNumber(each[2])
+            ]
+
+            result = HillMatrixDot(matrix,each_num)
+            plaintext += NumberToAlphabet(result[0]%26)
+            plaintext += NumberToAlphabet(result[1]%26)
+            plaintext += NumberToAlphabet(result[2]%26)
+
         return plaintext
 
 
@@ -330,6 +385,90 @@ def super_encrypt(text, key, opt):
         return res
     # else:
 
+
+def PartitionN(text='', num=0):
+    result = []
+
+    while text:
+        result.append(text[:num])
+        text = text[num:]
+
+    return result
+
+
+def IsAllNumber(l=[]):
+    for each in l:
+        if not each.isdigit():
+            return False
+    return True
+
+def HillInverseMatrix(matrix=[[]]):
+    inverse = [
+        [
+            (matrix[1][1] * matrix[2][2]) - (matrix[2][1] * matrix[1][2]),
+            -((matrix[0][1] * matrix[2][2]) - (matrix[2][1] * matrix[0][2])),
+            (matrix[0][1] * matrix[1][2]) - (matrix[1][1] * matrix[0][2])
+        ],
+        [
+            -((matrix[1][0] * matrix[2][2]) - (matrix[2][0] * matrix[1][2])),
+            (matrix[0][0] * matrix[2][2]) - (matrix[2][0] * matrix[0][2]),
+            -((matrix[0][0] * matrix[1][2]) - (matrix[1][0] * matrix[0][2]))
+        ],
+        [
+            (matrix[1][0] * matrix[2][1]) - (matrix[2][0] * matrix[1][1]),
+            -((matrix[0][0] * matrix[2][1]) - (matrix[2][0] * matrix[0][1])),
+            (matrix[0][0] * matrix[1][1]) - (matrix[1][0] * matrix[0][1])
+        ]
+    ]
+    
+    det = (matrix[0][0] * inverse[0][0] + matrix[0][1] * inverse[1][0] + matrix[0][2] * inverse[2][0]) % 26
+
+    if det == 0:
+        return False
+    
+    det_inverse = InverseModulo(det)
+
+    if det_inverse==26:
+        return False
+
+    for i in range(3):
+        for j in range(3):
+            inverse[i][j] = (inverse[i][j] * det_inverse) % 26
+
+    return inverse
+
+def HillKeyMatrix(key=[]):
+    key = list(map(int,key))
+    matrix = []
+
+    for i in range(3):
+        row = []
+        for j in range(3):
+            row.append(key[i*3+j])
+        matrix.append(row)
+
+    return matrix
+
+def AlphabetToNumber(value='A'):
+    return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.index(value)
+
+def NumberToAlphabet(value=0):
+    return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[value]
+
+def HillMatrixDot(matrix=[[]], row=[]):
+    result = [0, 0, 0]
+
+    for i in range(3):
+        result[i] += matrix[i][0] * row[0] + matrix[i][1] * row[1] + matrix[i][2] * row[2]
+
+    return result
+
+def InverseModulo(value=0):
+    i = 2
+    while (value * i) % 26 != 1 and i<26:
+        i += 1
+
+    return i
 
 
 if __name__ == "__main__":

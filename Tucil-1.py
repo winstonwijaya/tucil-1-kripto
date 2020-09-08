@@ -9,6 +9,7 @@ from kivy.graphics import Color, Rectangle
 from kivy.lang import Builder
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.behaviors import ToggleButtonBehavior
+from main import Crypto
 
 Builder.load_file('./Tucil-1.kv')
 
@@ -27,12 +28,45 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
         self.popup = FileChoosePopup(load=self.load)
         self.popup.open()
 
-    # NEED HANDLE ENCRYPTION
-    def handleEncrypt(self, input_text):
-        self.ids.result_text.text = input_text
+    def handleSave(self):
+        pass
 
-    def handleDecrypt(self, input_text):
-        self.ids.result_text.text = input_text
+    # NEED HANDLE ENCRYPTION
+    def handleEncrypt(self, input_text, key):
+        if self.radio_selected == 0:
+            pass
+        elif self.radio_selected == 1:
+            pass
+        elif self.radio_selected == 2:
+            pass
+        elif self.radio_selected == 3:
+            pass
+        elif self.radio_selected == 4:
+            self.ids.result_text.text = Crypto().PlayfairCipherEncrypt(input_text,key)
+        elif self.radio_selected == 5:
+            pass
+        elif self.radio_selected == 6:
+            pass
+        elif self.radio_selected == 7:
+            self.ids.result_text.text = Crypto().HillCipherEncrypt(input_text,key)
+
+    def handleDecrypt(self, input_text, key):
+        if self.radio_selected == 0:
+            pass
+        elif self.radio_selected == 1:
+            pass
+        elif self.radio_selected == 2:
+            pass
+        elif self.radio_selected == 3:
+            pass
+        elif self.radio_selected == 4:
+            self.ids.result_text.text = Crypto().PlayfairCipherDecrypt(input_text,key)
+        elif self.radio_selected == 5:
+            pass
+        elif self.radio_selected == 6:
+            pass
+        elif self.radio_selected == 7:
+            self.ids.result_text.text = Crypto().HillCipherDecrypt(input_text,key)
     
     def handleRadio(self, current):
         if self.radio_selected != current:
@@ -59,10 +93,9 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
             # AFFINE CIPHER
             elif current == 6:
                 self.ids.radio_6.state = 'down'
-            # HILL cIPHER
+            # HILL CIPHER
             elif current == 7:
                 self.ids.radio_7.state = 'down'
-        print(self.radio_selected)
 
     # NEED HANDLE LOAD FILE USING FILE_PATH
     # AFTER, CHANGE INPUT TEXT AND ENCRYPT IT
@@ -72,9 +105,10 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
         self.ids.file_path.text = self.file_path
         
         f = open(self.file_path)
-        content = f.read()
+        [content,key] = f.readlines()
         self.ids.input_text.text = content
-        self.handleEncrypt(content)
+        self.ids.key_text.text = key
+        self.handleEncrypt(content,key)
 
 class MyApp(App):
     def build(self):

@@ -3,17 +3,22 @@
 
     ## UPPER ROW
     Button:
-        text: 'Choose File'
-        size_hint: (0.2, 0.06)
+        text: 'Browse'
+        size_hint: (0.1, 0.06)
         pos_hint: {'x':0.05, 'y':0.9}
         on_press: root.handleChooseFile()
     Button:
         id: file_path
         text: 'No Chosen File...'
         size_hint: (0.4, 0.06)
-        pos_hint: {'x':0.25, 'y':0.9}
+        pos_hint: {'x':0.15, 'y':0.9}
         disabled: True
         color: (1, 1, 1, 2)
+    Button:
+        text: 'Save'
+        size_hint: (0.1, 0.06)
+        pos_hint: {'x':0.55, 'y':0.9}
+        on_press: root.handleSave()
 
     ## INPUT ROW
     Button:
@@ -48,12 +53,12 @@
         text: 'Encrypt'
         size_hint: (0.1, 0.05)
         pos_hint: {'x':0.55, 'y':0.45}
-        on_press: root.handleEncrypt(input_text.text)
+        on_press: root.handleEncrypt(input_text.text, key_text.text)
     Button:
         text: 'Decrypt'
         size_hint: (0.1, 0.05)
         pos_hint: {'x':0.55, 'y':0.4}
-        on_press: root.handleDecrypt(input_text.text)
+        on_press: root.handleDecrypt(input_text.text, key_text.text)
 
     ## RESULT ROW
     Button:
