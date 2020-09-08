@@ -7,7 +7,7 @@ import string
 # full_chip_matrix = np.empty((26,26))
 MAX_MATRIX_SIZE = 26
 DECRYPTION_ERROR = "Please encrypt first before proceeding to decryption process"
-ALPHBET_CHOICE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+DIVIDE_SIZE = 5
 
 def load_plain_text(filename):
     text = ""
@@ -40,25 +40,22 @@ def generate_full_vigenere_key():
     selected_keys = []
     key = ""
     while(len(key) < 26):
-            random_char = random.choice(ALPHBET_CHOICE)
+            random_char = random.choice(string.ascii_uppercase)
             if not random_char in key:
                 key += random_char
     for item in key:
         selected_keys.append(list(item))
     
-    options = list(ALPHBET_CHOICE)
-    print(options)
     while(len(selected_keys[0])<26):
-        selected_chars = ""
+        it = 0
+        selected_chars = []
+        random_char = ""
         for item in selected_keys:
-            random_char = random.choice([x for x in options if x not in item and x not in selected_chars])
-            print(options)
-            print([x for x in options if x not in item and x not in selected_chars])
-            # while (random_char in selected_chars) or (random_char in item):
-            #     random_char = random.choice(ALPHBET_CHOICE)
-            selected_chars += random_char
+            random_char = random.choice(string.ascii_uppercase)
+            while (random_char in selected_chars or random_char in item):
+                random_char = random.choice(string.ascii_uppercase)
             item += random_char
-            # print(item)
+        # print(selected_keys)
 
     # print(selected_keys)
     return selected_keys
@@ -102,26 +99,84 @@ def vigenere_full(text, key, opt):
             temp_str = "".join(item)
             temp.append(temp_str)
 
-        save_file('keystore.txt', temp_text + "," + ''.join(temp))
-              
+        rows = ""
         for char, temp_key in zip(temp_text, new_key):
-            print(ord(char)-65, ord(temp_key)-65)
-            new_text += keys[ord(char)-65][ord(temp_key)-65]
+            print(ord(temp_key)-65, ord(char)-65)
+            rows+= str(ord(temp_key)-65) + ";"
+            new_text += keys[ord(temp_key)-65][ord(char)-65]
+        print(rows)
         print(new_text)
+        save_file('keystore.txt', rows + "," + ''.join(temp))
     else:
         temp = load_plain_text('keystore.txt').split(",")
         keys = split_text(temp[1], 26)
-        print(keys)
-        for char, temp_key in zip(temp_text, new_key):
-            idx = 0
-            for id, val in enumerate(keys):
-                if(char == val[ord(temp_key)-65]):
-                    print(id,ord(temp_key)-65)
-                    idx = id
-                    break
+        key_rows = temp[0].split(";")[0:-1]
+        # print(key_rows)
+        # print(keys)
+        for char, temp_key in zip(temp_text, key_rows):
+            # print(keys[int(temp_key)])
+            idx = keys[int(temp_key)].index(char)
             new_text += chr(idx+65)
         print(new_text.lower())
-    
+
+def transpose_enc_dec(text, key, prev_key, opt):
+    res = []
+    if(opt == 0):
+        diff = DIVIDE_SIZE - (len(key) % 5) 
+        text += diff*'Z'
+        # print(text)       
+        temp = []
+        # print(len(text)//DIVIDE_SIZE) 
+        for i in range((len(text)//DIVIDE_SIZE)):
+            temp.append( text[i*DIVIDE_SIZE:((i+1)*DIVIDE_SIZE)])
+        # print(temp)
+        for i in range(DIVIDE_SIZE):
+            temp_str = ""
+            for char in temp:
+                temp_str += char[i]
+            res.append(temp_str)
+        return(''.join(res))
+    else:
+        mul = len(text)//DIVIDE_SIZE
+        temp = []
+        for i in range(DIVIDE_SIZE):
+            temp.append(text[i*mul:((i+1)*mul)])
+        # print(temp)
+        for i in range(mul):
+            temp_str = ""
+            for char in temp:
+                temp_str += char[i]
+            res.append(temp_str)
+        # print(key)
+        # print(-(len(text)-len(prev_key)))
+        # print(res)
+        res_text = ''.join(res)
+        final_res = res_text if (len(text)-len(prev_key) == 0) else res_text[:-(len(text)-len(prev_key))]
+        return(final_res)
+        
+        
+        
+
+def super_encrypt(text, key, opt):
+    if(opt == 0):
+        temp_text = clear_text(text).upper()
+        new_key = generate_key_repeat(temp_text, key).upper()
+        # print(new_key)
+        save_file('temp_keystore.txt', new_key)
+        temp = vigenere_standard(text, key, opt) 
+        res = transpose_enc_dec(temp,new_key, new_key, opt)
+        return res
+    else:
+        temp_text = clear_text(text).upper()
+        new_key = generate_key_repeat(temp_text, key).upper()
+        prev_key = load_plain_text('temp_keystore.txt')
+        print(prev_key)
+        temp_res = transpose_enc_dec(temp_text, new_key, prev_key, opt)
+        res = vigenere_standard(temp_res, key, opt)
+        return res
+    # else:
+
+
 
 if __name__ == "__main__":
     # temp = load_plain_text("README.md")
@@ -130,4 +185,5 @@ if __name__ == "__main__":
     # print(vigenere_standard("LVVQHZNGFHRVL", "sonysonysonyss", 1))
     # print(generate_key_repeat("testtests", "test"))
     # print(generate_full_vigenere_key())
-    vigenere_full("test", "temp", 0)
+    # vigenere_full("OXAU", "temp", 1)
+    print(super_encrypt("MIIEEIIMMZ", "temp", 1))
