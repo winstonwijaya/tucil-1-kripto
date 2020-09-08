@@ -15,6 +15,58 @@ def load_plain_text(filename):
         text = files.read() 
     return text
 
+def load_binary(filename):
+    text = []
+    with open (filename, 'rb') as files:
+        byte = files.read(1)
+        while byte:
+            byte = files.read(1)
+            text.append(byte)
+            # print(byte)
+    res = []
+    for item in text:
+        res.append(item.decode('unicode_escape', 'replace'))
+    print(res)
+    return res
+
+def save_binary(filename, text):
+    new_text = []
+    for item in text:
+        # print(item)
+        new_text.append(item.encode('unicode_escape', 'replace'))
+    print(new_text)
+    with open (filename, 'wb') as files:
+        for item in new_text:
+            files.write(item)
+
+def extended_vigenere_encrypt(filename, key):
+    temp_text = load_binary(filename)
+    new_key = generate_key_repeat(temp_text, key)
+    new_text = []
+    
+    for char, key in zip(temp_text, new_key):
+        new_text.append( chr((ord(char)+ord(key)) % 256) if(char != '') else '' )
+    # temp2 = []
+    # for char, key in zip(new_text, new_key):
+    #     temp2.append( chr((ord(char)-ord(key)) % 256) if(char != '') else '' )
+    # save_file('temp_key.txt', new_key)
+    save_binary(filename, new_text)
+    test = load_binary(filename)
+    print(test)
+    
+    # print(temp2)
+
+def extended_vigenere_decrypt(filename, key):
+    temp_text = load_binary(filename)
+    new_key = load_plain_text('temp_key.txt')
+    new_text = []
+    for char, key in zip(temp_text, new_key):
+        new_text.append( chr((ord(char)-ord(key))) % 256 if(char != '') else '' )
+    res = new_text[:-1]
+    res.append('')
+    # save_binary(filename, new_text)
+    print(res)
+
 def save_file(filename, text):
     with open(filename, 'w') as files:
         files.write(text)
@@ -355,17 +407,39 @@ def affine_cipher(text, key, opt):
                 res += chr(65 + (inv * (ord(text[i])-65 - int(keys[1]))) % 26)
             else:
                 res += ' '
-
-    # print(res.lower())
     return res.lower()
+
+def generate_auto_key(text, key):
+    new_key = key + text[:(len(text)-len(key))]
+    return new_key
+
+def auto_key_vigenere(text, key, opt):
+    text = clear_text(text).upper()
+    new_text = ""
+
+    # opt = 0 --> encrypt, opt = 1 --> decrypt
+    if(opt == 0):
+        new_key = generate_auto_key(text, key)
+        for char, key in zip(text, new_key):
+            new_text += chr(65 + (ord(char)+ord(key)) % 26)
+        save_file('temp_key.txt', new_key)
+    else:
+        new_key = load_plain_text('temp_key.txt')
+        for char, key in zip(text, new_key):
+            new_text += chr(65 + (ord(char)-ord(key)) % 26)
+        new_text = new_text.lower()
+    return new_text
 
 if __name__ == "__main__":
     # temp = load_plain_text("README.md")
     # print(temp)
 
-    # print(vigenere_standard("LVVQHZNGFHRVL", "sonysonysonyss", 1))
+    # print(vigenere_standard("thisplaintext", "sonysonysonys", 0))
     # print(generate_key_repeat("testtests", "test"))
     # print(generate_full_vigenere_key())
     # vigenere_full("OXAU", "temp", 1)
     # print(super_encrypt("MIIEEIIMMZ", "temp", 1))
     # print(affine_cipher("hkzo oxo oxfkh","7 10",1))
+    # extended_vigenere_encrypt("tes.jpg", "temp")
+    # extended_vigenere_decrypt("tes.jpg", "temp")
+    print(auto_key_vigenere("VRJOEEVEEGWEFOSMAVJMS", "INDO", 1))
