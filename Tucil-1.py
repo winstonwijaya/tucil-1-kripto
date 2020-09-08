@@ -32,6 +32,18 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
     def handleSave(self):
         pass
 
+    # NEED HANDLE LOAD FILE USING FILE_PATH
+    # AFTER, CHANGE INPUT TEXT AND ENCRYPT IT
+    def load(self, selection):
+        self.file_path = str(selection[0])
+        self.popup.dismiss()
+        self.ids.file_path.text = self.file_path
+        
+        f = open(self.file_path)
+        [content,key] = f.readlines()
+        self.ids.input_text.text = content
+        self.ids.key_text.text = key
+
     # ENCRYPT
     def handleEncrypt(self, input_text, key):
         result = ''
@@ -153,18 +165,6 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
             # HILL CIPHER
             elif current == 7:
                 self.ids.radio_7.state = 'down'
-
-    # NEED HANDLE LOAD FILE USING FILE_PATH
-    # AFTER, CHANGE INPUT TEXT AND ENCRYPT IT
-    def load(self, selection):
-        self.file_path = str(selection[0])
-        self.popup.dismiss()
-        self.ids.file_path.text = self.file_path
-        
-        f = open(self.file_path)
-        [content,key] = f.readlines()
-        self.ids.input_text.text = content
-        self.ids.key_text.text = key
 
 class MyApp(App):
     def build(self):

@@ -463,7 +463,7 @@ class Crypto():
             new_key = generate_key_repeat(temp_text, key).upper()
             # print(new_key)
             save_file('temp_keystore.txt', new_key)
-            temp = vigenere_standard(text, key, opt) 
+            temp = Crypto().vigenere_standard(text, key, opt) 
             res = transpose_enc_dec(temp,new_key, new_key, opt)
         else:
             temp_text = clear_text(text).upper()
@@ -471,7 +471,7 @@ class Crypto():
             prev_key = load_plain_text('temp_keystore.txt')
             print(prev_key)
             temp_res = transpose_enc_dec(temp_text, new_key, prev_key, opt)
-            res = vigenere_standard(temp_res, key, opt)
+            res = Crypto().vigenere_standard(temp_res, key, opt)
         return res
 
     @staticmethod
