@@ -58,11 +58,11 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
 
         # AUTO-KEY VIGENERE CIPHER
         elif self.radio_selected == 2:
-            pass
+            result = Crypto().auto_key_vigenere(input_text,key,0)
 
         # EXTENDED VIGENERE CIPHER
         elif self.radio_selected == 3:
-            pass
+            result = Crypto().extended_vigenere_encrypt(input_text,key)
 
         # PLAYFAIR CIPHER
         elif self.radio_selected == 4:
@@ -99,11 +99,11 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
 
         # AUTO-KEY VIGENERE CIPHER
         elif self.radio_selected == 2:
-            pass
+            result = Crypto().auto_key_vigenere(input_text,key,1)
 
         # EXTENDED VIGENERE CIPHER
         elif self.radio_selected == 3:
-            pass
+            result = Crypto().extended_vigenere_decrypt(input_text,key)
 
         # PLAYFAIR CIPHER
         elif self.radio_selected == 4:

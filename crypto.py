@@ -39,34 +39,6 @@ def save_binary(filename, text):
         for item in new_text:
             files.write(item)
 
-def extended_vigenere_encrypt(filename, key):
-    temp_text = load_binary(filename)
-    new_key = generate_key_repeat(temp_text, key)
-    new_text = []
-    
-    for char, key in zip(temp_text, new_key):
-        new_text.append( chr((ord(char)+ord(key)) % 256) if(char != '') else '' )
-    # temp2 = []
-    # for char, key in zip(new_text, new_key):
-    #     temp2.append( chr((ord(char)-ord(key)) % 256) if(char != '') else '' )
-    # save_file('temp_key.txt', new_key)
-    save_binary(filename, new_text)
-    test = load_binary(filename)
-    print(test)
-    
-    # print(temp2)
-
-def extended_vigenere_decrypt(filename, key):
-    temp_text = load_binary(filename)
-    new_key = load_plain_text('temp_key.txt')
-    new_text = []
-    for char, key in zip(temp_text, new_key):
-        new_text.append( chr((ord(char)-ord(key))) % 256 if(char != '') else '' )
-    res = new_text[:-1]
-    res.append('')
-    # save_binary(filename, new_text)
-    print(res)
-
 def save_file(filename, text):
     with open(filename, 'w') as files:
         files.write(text)
@@ -117,10 +89,6 @@ def alpha_to_num(value):
 
 def num_to_alpha(value):
     return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[value]
-
-def vigenere_running(text, opt):
-    key = load_plain_text('pembukaanUUD1945.txt')
-    return vigenere_standard(text, key, opt)
 
 def split_text(text, length):
     result = []
@@ -571,6 +539,36 @@ class Crypto():
                 new_text += chr(65 + (ord(char)-ord(key)) % 26)
             new_text = new_text.lower()
         return new_text
+
+    @staticmethod
+    def extended_vigenere_encrypt(filename, key):
+        temp_text = load_binary(filename)
+        new_key = generate_key_repeat(temp_text, key)
+        new_text = []
+        
+        for char, key in zip(temp_text, new_key):
+            new_text.append( chr((ord(char)+ord(key)) % 256) if(char != '') else '' )
+        # temp2 = []
+        # for char, key in zip(new_text, new_key):
+        #     temp2.append( chr((ord(char)-ord(key)) % 256) if(char != '') else '' )
+        # save_file('temp_key.txt', new_key)
+        save_binary(filename, new_text)
+        test = load_binary(filename)
+        print(test)
+        
+        # print(temp2)
+
+    @staticmethod
+    def extended_vigenere_decrypt(filename, key):
+        temp_text = load_binary(filename)
+        new_key = load_plain_text('temp_key.txt')
+        new_text = []
+        for char, key in zip(temp_text, new_key):
+            new_text.append( chr((ord(char)-ord(key))) % 256 if(char != '') else '' )
+        res = new_text[:-1]
+        res.append('')
+        # save_binary(filename, new_text)
+        print(res)
 
 if __name__ == "__main__":
     # temp = load_plain_text("README.md")
