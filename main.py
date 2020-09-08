@@ -123,6 +123,160 @@ def vigenere_full(text, key, opt):
             new_text += chr(idx+65)
         print(new_text.lower())
 
+def PlayfairKeyMatrix(key=''):
+    key = clear_text(key).upper()
+    key = key.replace('J','')
+    unique = []
+    matrix = []
+
+    for each in key:
+        if not unique.count(each):
+            unique.append(each)
+    
+    for each in 'ABCDEFGHIKLMNOPQRSTUVWXYZ':
+        if not unique.count(each):
+            unique.append(each)
+    
+    for i in range(5):
+        row = []
+        for j in range(5):
+            row.append(unique[i*5+j])
+        matrix.append(row)
+
+    return matrix
+
+def FindPositionMatrix(matrix = [[]], value = ''):
+    x = 0
+    y = 0
+    for i in range(len(matrix)):
+        if matrix[i].count(value):
+            x = i
+            y = matrix[i].index(value)
+
+    return [x, y]
+
+def PrintMatrix(matrix = [[]]):
+    for i in range(len(matrix)):
+        for j in range(len(matrix[i])):
+            if j:
+                print(' ', end='')
+            print(matrix[i][j], end='')
+        print()
+
+class Crypto():
+    @staticmethod
+    def PlayfairCipherEncrypt(plaintext='', key=''):
+        matrix = PlayfairKeyMatrix(key)
+        # PrintMatrix(matrix)
+        plaintext = clear_text(plaintext).upper()
+        bigram = []
+        cipher = ''
+        
+        while plaintext:
+            if len(plaintext) == 1:
+                bigram.append(plaintext + 'X')
+                plaintext = ''
+            elif plaintext[0] == plaintext[1]:
+                bigram.append(plaintext[0] + 'X')
+                plaintext = plaintext[1:]
+            else:
+                bigram.append(plaintext[0:2])
+                plaintext = plaintext[2:]
+        # print(bigram)
+        
+        for i,each in enumerate(bigram):
+            loc_first = FindPositionMatrix(matrix,each[0])
+            loc_second = FindPositionMatrix(matrix,each[1])
+
+            if i:
+                cipher += ' '
+            
+            # RULES
+            if loc_first[0] == loc_second[0]:
+                if loc_first[1] == 4:
+                    cipher += matrix[loc_first[0]][0]
+                else:
+                    cipher += matrix[loc_first[0]][loc_first[1]+1]
+
+                if loc_second[1] == 4:
+                    cipher += matrix[loc_second[0]][0]
+                else:
+                    cipher += matrix[loc_second[0]][loc_second[1]+1]
+            elif loc_first[1] == loc_second[1]:
+                if loc_first[0] == 4:
+                    cipher += matrix[0][loc_first[1]]
+                else:
+                    cipher += matrix[loc_first[0]+1][loc_first[1]]
+
+                if loc_second[0] == 4:
+                    cipher += matrix[0][loc_second[1]]
+                else:
+                    cipher += matrix[loc_second[0]+1][loc_second[1]]
+            else:
+                cipher += matrix[loc_first[0]][loc_second[1]]
+                cipher += matrix[loc_second[0]][loc_first[1]]
+        
+        return cipher
+
+    @staticmethod
+    def PlayfairCipherDecrypt(ciphertext='', key=''):
+        matrix = PlayfairKeyMatrix(key)
+        # PrintMatrix(matrix)
+        ciphertext = ciphertext.split(' ')
+        plainlist = []
+        plaintext = ''
+        
+        for each in ciphertext:
+            bigram = ''
+            loc_first = FindPositionMatrix(matrix,each[0])
+            loc_second = FindPositionMatrix(matrix,each[1])
+            
+            # RULES
+            if loc_first[0] == loc_second[0]:
+                if loc_first[1] == 0:
+                    bigram += matrix[loc_first[0]][4]
+                else:
+                    bigram += matrix[loc_first[0]][loc_first[1]-1]
+
+                if loc_second[1] == 0:
+                    bigram += matrix[loc_second[0]][4]
+                else:
+                    bigram += matrix[loc_second[0]][loc_second[1]-1]
+            elif loc_first[1] == loc_second[1]:
+                if loc_first[0] == 0:
+                    bigram += matrix[4][loc_first[1]]
+                else:
+                    bigram += matrix[loc_first[0]-1][loc_first[1]]
+
+                if loc_second[0] == 0:
+                    bigram += matrix[4][loc_second[1]]
+                else:
+                    bigram += matrix[loc_second[0]-1][loc_second[1]]
+            else:
+                bigram += matrix[loc_first[0]][loc_second[1]]
+                bigram += matrix[loc_second[0]][loc_first[1]]
+
+            plainlist.append(bigram)
+            
+        plainlist.reverse()
+        removed = 0
+
+        for each in plainlist:
+            if plaintext:
+                if each[0] == plaintext[0] and each[1] == 'X':
+                    plaintext = each[0] + plaintext
+                    removed += 1
+                else:
+                    plaintext = each + plaintext
+            else:
+                plaintext = each + plaintext
+        
+        if (len(plaintext)+removed) % 2 == 0:
+            plaintext = plaintext[:-1]
+        
+        return plaintext
+
+
 def transpose_enc_dec(text, key, prev_key, opt):
     res = []
     if(opt == 0):
