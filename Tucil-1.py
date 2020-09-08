@@ -9,6 +9,7 @@ from kivy.graphics import Color, Rectangle
 from kivy.lang import Builder
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.behaviors import ToggleButtonBehavior
+from main import Crypto
 
 Builder.load_file('./Tucil-1.kv')
 
@@ -22,18 +23,120 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
         self.popup = ObjectProperty(None)
         self.file_path = ''
         self.radio_selected = 0
+        self.cipher_result = 0
 
     def handleChooseFile(self):
         self.popup = FileChoosePopup(load=self.load)
         self.popup.open()
 
-    # NEED HANDLE ENCRYPTION
-    def handleEncrypt(self, input_text):
-        self.ids.result_text.text = input_text
+    def handleSave(self):
+        pass
 
-    def handleDecrypt(self, input_text):
-        self.ids.result_text.text = input_text
+    # NEED HANDLE LOAD FILE USING FILE_PATH
+    # AFTER, CHANGE INPUT TEXT AND ENCRYPT IT
+    def load(self, selection):
+        self.file_path = str(selection[0])
+        self.popup.dismiss()
+        self.ids.file_path.text = self.file_path
+        
+        f = open(self.file_path)
+        [content,key] = f.readlines()
+        self.ids.input_text.text = content
+        self.ids.key_text.text = key
+
+    # ENCRYPT
+    def handleEncrypt(self, input_text, key):
+        result = ''
+
+        # STANDARD VIGENERE CIPHER
+        if self.radio_selected == 0:
+            result = Crypto().vigenere_standard(input_text,key,0)
+
+        # FULL VIGENERE CIPHER
+        elif self.radio_selected == 1:
+            result = Crypto().vigenere_full(input_text,key,0)
+
+        # AUTO-KEY VIGENERE CIPHER
+        elif self.radio_selected == 2:
+            pass
+
+        # EXTENDED VIGENERE CIPHER
+        elif self.radio_selected == 3:
+            pass
+
+        # PLAYFAIR CIPHER
+        elif self.radio_selected == 4:
+            result = Crypto().playfair_encrypt(input_text,key)
+
+        # SUPER ENCRYPT
+        elif self.radio_selected == 5:
+            result = Crypto().super_encrypt(input_text,key,0)
+
+        # AFFINE CIPHER
+        elif self.radio_selected == 6:
+            result = Crypto().affine_cipher(input_text,key,0)
+
+        # HILL CIPHER
+        elif self.radio_selected == 7:
+            result = Crypto().hill_encrypt(input_text,key)
+        
+        # SET RESULT
+        if self.cipher_result == 1:
+            result = Crypto().string_add_seperator(result,5)
+        self.ids.result_text.text = result
+
+    # DECRYPT
+    def handleDecrypt(self, input_text, key):
+        result = ''
+
+        # STANDARD VIGENERE CIPHER
+        if self.radio_selected == 0:
+            result = Crypto().vigenere_standard(input_text,key,1)
+
+        # FULL VIGENERE CIPHER
+        elif self.radio_selected == 1:
+            result = Crypto().vigenere_full(input_text,key,1)
+
+        # AUTO-KEY VIGENERE CIPHER
+        elif self.radio_selected == 2:
+            pass
+
+        # EXTENDED VIGENERE CIPHER
+        elif self.radio_selected == 3:
+            pass
+
+        # PLAYFAIR CIPHER
+        elif self.radio_selected == 4:
+            result = Crypto().playfair_decrypt(input_text,key)
+
+        # SUPER ENCRYPT
+        elif self.radio_selected == 5:
+            result = Crypto().super_encrypt(input_text,key,1)
+
+        # AFFINE CIPHER
+        elif self.radio_selected == 6:
+            result = Crypto().affine_cipher(input_text,key,1)
+
+        # HILL CIPHER
+        elif self.radio_selected == 7:
+            result = Crypto().hill_decrypt(input_text,key)
+
+        # SET RESULT
+        if self.cipher_result == 1:
+            result = Crypto().string_add_seperator(result,5)
+        self.ids.result_text.text = result
     
+    def handleCipherResult(self, current):
+        if self.cipher_result != current:
+            self.cipher_result = current
+        else:
+            # RESULT NO SPACE
+            if current == 0:
+                self.ids.cipher_result_0.state = 'down'
+            # RESULT WITH SPACE
+            elif current == 1:
+                self.ids.cipher_result_1.state = 'down'
+
     def handleRadio(self, current):
         if self.radio_selected != current:
             self.radio_selected = current
@@ -59,22 +162,9 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
             # AFFINE CIPHER
             elif current == 6:
                 self.ids.radio_6.state = 'down'
-            # HILL cIPHER
+            # HILL CIPHER
             elif current == 7:
                 self.ids.radio_7.state = 'down'
-        print(self.radio_selected)
-
-    # NEED HANDLE LOAD FILE USING FILE_PATH
-    # AFTER, CHANGE INPUT TEXT AND ENCRYPT IT
-    def load(self, selection):
-        self.file_path = str(selection[0])
-        self.popup.dismiss()
-        self.ids.file_path.text = self.file_path
-        
-        f = open(self.file_path)
-        content = f.read()
-        self.ids.input_text.text = content
-        self.handleEncrypt(content)
 
 class MyApp(App):
     def build(self):

@@ -112,70 +112,26 @@ def generate_full_vigenere_key():
     # print(selected_keys)
     return selected_keys
 
-def vigenere_standard(text, key, opt):
-    temp_text = clear_text(text).upper()
-    new_key = generate_key_repeat(text, key).upper()
-    new_text = ""
+def alpha_to_num(value):
+    return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.index(value)
 
-    # opt = 0 --> encrypt, opt = 1 --> decrypt
-    if(opt == 0):
-        for char, key in zip(temp_text, new_key):
-            new_text += chr(65 + (ord(char)+ord(key)) % 26)
-    else:
-        for char, key in zip(temp_text, new_key):
-            new_text += chr(65 + (ord(char)-ord(key)) % 26)
-        new_text = new_text.lower()
-    return new_text
+def num_to_alpha(value):
+    return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[value]
 
 def vigenere_running(text, opt):
     key = load_plain_text('pembukaanUUD1945.txt')
     return vigenere_standard(text, key, opt)
 
 def split_text(text, length):
-    lists = []
-    start_pos = 0
-    while start_pos != len(text):
-        if(start_pos + length < len(text)):
-            lists.append( text[ start_pos : (start_pos+ length)])
-            start_pos += length
-        else:
-            lists.append(text[ start_pos : len(text)])
-            start_pos = len(text)
-    return lists      
+    result = []
 
-def vigenere_full(text, key, opt):
-    temp_text = clear_text(text).upper()
-    new_key = generate_key_repeat(temp_text, key).upper()
-    new_text = ""
-    # print(temp_text)
-    if(opt == 0):
-        keys = generate_full_vigenere_key()
-        temp = []
-        for item in keys:
-            temp_str = "".join(item)
-            temp.append(temp_str)
+    while text:
+        result.append(text[:length])
+        text = text[length:]
 
-        rows = ""
-        for char, temp_key in zip(temp_text, new_key):
-            print(ord(temp_key)-65, ord(char)-65)
-            rows+= str(ord(temp_key)-65) + ";"
-            new_text += keys[ord(temp_key)-65][ord(char)-65]
-        print(rows)
-        print(new_text)
-        save_file('keystore.txt', rows + "," + ''.join(temp))
-    else:
-        temp = load_plain_text('keystore.txt').split(",")
-        keys = split_text(temp[1], 26)
-        key_rows = temp[0].split(";")[0:-1]
-        # print(key_rows)
-        # print(keys)
-        for char, temp_key in zip(temp_text, key_rows):
-            # print(keys[int(temp_key)])
-            idx = keys[int(temp_key)].index(char)
-            new_text += chr(idx+65)
-        print(new_text.lower())
+    return result
 
-def PlayfairKeyMatrix(key=''):
+def playfair_key_matrix(key=''):
     key = clear_text(key).upper()
     key = key.replace('J','')
     unique = []
@@ -197,7 +153,7 @@ def PlayfairKeyMatrix(key=''):
 
     return matrix
 
-def FindPositionMatrix(matrix = [[]], value = ''):
+def find_position_matrix(matrix = [[]], value = ''):
     x = 0
     y = 0
     for i in range(len(matrix)):
@@ -207,7 +163,7 @@ def FindPositionMatrix(matrix = [[]], value = ''):
 
     return [x, y]
 
-def PrintMatrix(matrix = [[]]):
+def print_matrix(matrix = [[]]):
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
             if j:
@@ -215,12 +171,119 @@ def PrintMatrix(matrix = [[]]):
             print(matrix[i][j], end='')
         print()
 
+def transpose_enc_dec(text, key, prev_key, opt):
+    res = []
+    if(opt == 0):
+        diff = DIVIDE_SIZE - (len(key) % 5) 
+        text += diff*'Z'
+        # print(text)       
+        temp = []
+        # print(len(text)//DIVIDE_SIZE) 
+        for i in range((len(text)//DIVIDE_SIZE)):
+            temp.append( text[i*DIVIDE_SIZE:((i+1)*DIVIDE_SIZE)])
+        # print(temp)
+        for i in range(DIVIDE_SIZE):
+            temp_str = ""
+            for char in temp:
+                temp_str += char[i]
+            res.append(temp_str)
+        return(''.join(res))
+    else:
+        mul = len(text)//DIVIDE_SIZE
+        temp = []
+        for i in range(DIVIDE_SIZE):
+            temp.append(text[i*mul:((i+1)*mul)])
+        # print(temp)
+        for i in range(mul):
+            temp_str = ""
+            for char in temp:
+                temp_str += char[i]
+            res.append(temp_str)
+        # print(key)
+        # print(-(len(text)-len(prev_key)))
+        # print(res)
+        res_text = ''.join(res)
+        final_res = res_text if (len(text)-len(prev_key) == 0) else res_text[:-(len(text)-len(prev_key))]
+        return(final_res)    
+
+def inverse_modulo(m, n):
+    for i in range(n):
+        if ( (m * i) % n == 1 ):
+            return i
+    return -1
+
+def is_list_number(l=[]):
+    for each in l:
+        if not each.isdigit():
+            return False
+    return True
+
+def hill_inverse_matrix(matrix=[[]]):
+    inverse = [
+        [
+            (matrix[1][1] * matrix[2][2]) - (matrix[2][1] * matrix[1][2]),
+            -((matrix[0][1] * matrix[2][2]) - (matrix[2][1] * matrix[0][2])),
+            (matrix[0][1] * matrix[1][2]) - (matrix[1][1] * matrix[0][2])
+        ],
+        [
+            -((matrix[1][0] * matrix[2][2]) - (matrix[2][0] * matrix[1][2])),
+            (matrix[0][0] * matrix[2][2]) - (matrix[2][0] * matrix[0][2]),
+            -((matrix[0][0] * matrix[1][2]) - (matrix[1][0] * matrix[0][2]))
+        ],
+        [
+            (matrix[1][0] * matrix[2][1]) - (matrix[2][0] * matrix[1][1]),
+            -((matrix[0][0] * matrix[2][1]) - (matrix[2][0] * matrix[0][1])),
+            (matrix[0][0] * matrix[1][1]) - (matrix[1][0] * matrix[0][1])
+        ]
+    ]
+    
+    det = (matrix[0][0] * inverse[0][0] + matrix[0][1] * inverse[1][0] + matrix[0][2] * inverse[2][0]) % 26
+
+    if det == 0:
+        return False
+    
+    det_inverse = inverse_modulo(det,26)
+
+    if det_inverse == -1:
+        return False
+
+    for i in range(3):
+        for j in range(3):
+            inverse[i][j] = (inverse[i][j] * det_inverse) % 26
+
+    return inverse
+
+def hill_key_matrix(key=[]):
+    key = list(map(int,key))
+    matrix = []
+
+    for i in range(3):
+        row = []
+        for j in range(3):
+            row.append(key[i*3+j])
+        matrix.append(row)
+
+    return matrix
+
+def hill_matrix_dot(matrix=[[]], row=[]):
+    result = [0, 0, 0]
+
+    for i in range(3):
+        result[i] += matrix[i][0] * row[0] + matrix[i][1] * row[1] + matrix[i][2] * row[2]
+
+    return result
+
+def generate_auto_key(text, key):
+    new_key = key + text[:(len(text)-len(key))]
+    return new_key
+
+
 class Crypto():
     @staticmethod
-    def PlayfairCipherEncrypt(plaintext='', key=''):
-        matrix = PlayfairKeyMatrix(key)
-        # PrintMatrix(matrix)
+    def playfair_encrypt(plaintext, key):
+        matrix = playfair_key_matrix(key)
         plaintext = clear_text(plaintext).upper()
+        plaintext = plaintext.replace('J','I')
         bigram = []
         cipher = ''
         
@@ -234,14 +297,10 @@ class Crypto():
             else:
                 bigram.append(plaintext[0:2])
                 plaintext = plaintext[2:]
-        # print(bigram)
         
-        for i,each in enumerate(bigram):
-            loc_first = FindPositionMatrix(matrix,each[0])
-            loc_second = FindPositionMatrix(matrix,each[1])
-
-            if i:
-                cipher += ' '
+        for each in bigram:
+            loc_first = find_position_matrix(matrix,each[0])
+            loc_second = find_position_matrix(matrix,each[1])
             
             # RULES
             if loc_first[0] == loc_second[0]:
@@ -271,17 +330,17 @@ class Crypto():
         return cipher
 
     @staticmethod
-    def PlayfairCipherDecrypt(ciphertext='', key=''):
-        matrix = PlayfairKeyMatrix(key)
-        # PrintMatrix(matrix)
-        ciphertext = ciphertext.split(' ')
+    def playfair_decrypt(ciphertext, key):
+        matrix = playfair_key_matrix(key)
+        ciphertext = clear_text(ciphertext).upper()
+        ciphertext = split_text(ciphertext,2)
         plainlist = []
         plaintext = ''
         
         for each in ciphertext:
             bigram = ''
-            loc_first = FindPositionMatrix(matrix,each[0])
-            loc_second = FindPositionMatrix(matrix,each[1])
+            loc_first = find_position_matrix(matrix,each[0])
+            loc_second = find_position_matrix(matrix,each[1])
             
             # RULES
             if loc_first[0] == loc_second[0]:
@@ -328,107 +387,190 @@ class Crypto():
         
         return plaintext
 
+    @staticmethod
+    def hill_encrypt(plaintext, key):
+        plaintext = clear_text(plaintext).upper()
+        if len(plaintext) % 3 != 0:
+            return 'CAN\'T ENCRYPT, PLAIN TEXT\'S LENGTH IS NOT MULTIPLIER OF 3'
 
-def transpose_enc_dec(text, key, prev_key, opt):
-    res = []
-    if(opt == 0):
-        diff = DIVIDE_SIZE - (len(key) % 5) 
-        text += diff*'Z'
-        # print(text)       
-        temp = []
-        # print(len(text)//DIVIDE_SIZE) 
-        for i in range((len(text)//DIVIDE_SIZE)):
-            temp.append( text[i*DIVIDE_SIZE:((i+1)*DIVIDE_SIZE)])
-        # print(temp)
-        for i in range(DIVIDE_SIZE):
-            temp_str = ""
-            for char in temp:
-                temp_str += char[i]
-            res.append(temp_str)
-        return(''.join(res))
-    else:
-        mul = len(text)//DIVIDE_SIZE
-        temp = []
-        for i in range(DIVIDE_SIZE):
-            temp.append(text[i*mul:((i+1)*mul)])
-        # print(temp)
-        for i in range(mul):
-            temp_str = ""
-            for char in temp:
-                temp_str += char[i]
-            res.append(temp_str)
-        # print(key)
-        # print(-(len(text)-len(prev_key)))
-        # print(res)
-        res_text = ''.join(res)
-        final_res = res_text if (len(text)-len(prev_key) == 0) else res_text[:-(len(text)-len(prev_key))]
-        return(final_res)    
+        key = key.split(' ')
+        if len(key) != 9 or not is_list_number(key):
+            return 'CAN\'T ENCRYPT, KEY MUST BE 9 NUMBER SEPERATED BY SPACE'
 
-def super_encrypt(text, key, opt):
-    res = ""
-    if(opt == 0):
+        matrix = hill_key_matrix(key)
+        plaintext = split_text(plaintext,3)
+        ciphertext = ''
+
+        for each in plaintext:
+            each_num = [
+                alpha_to_num(each[0]),
+                alpha_to_num(each[1]),
+                alpha_to_num(each[2])
+            ]
+
+            result = hill_matrix_dot(matrix,each_num)
+            ciphertext += num_to_alpha(result[0]%26)
+            ciphertext += num_to_alpha(result[1]%26)
+            ciphertext += num_to_alpha(result[2]%26)
+
+        return ciphertext
+
+    @staticmethod
+    def hill_decrypt(ciphertext, key):
+        ciphertext = clear_text(ciphertext).upper()
+        if len(ciphertext) % 3 != 0:
+            return 'CAN\'T DECRYPT, CIPHERTEXT\'S LENGTH IS NOT MULTIPLIER OF 3'
+
+        key = key.split(' ')
+        if len(key) != 9 or not is_list_number(key):
+            return 'CAN\'T DECRYPT, KEY MUST BE 9 NUMBER SEPERATED BY SPACE'
+        
+        matrix = hill_key_matrix(key)
+        matrix = hill_inverse_matrix(matrix)
+        if matrix==False:
+            return 'CAN\'T DECRYPT, WRONG KEY'
+
+        ciphertext = split_text(ciphertext,3)
+        plaintext = ''
+
+        for each in ciphertext:
+            each_num = [
+                alpha_to_num(each[0]),
+                alpha_to_num(each[1]),
+                alpha_to_num(each[2])
+            ]
+
+            result = hill_matrix_dot(matrix,each_num)
+            plaintext += num_to_alpha(result[0]%26)
+            plaintext += num_to_alpha(result[1]%26)
+            plaintext += num_to_alpha(result[2]%26)
+
+        return plaintext
+    
+    @staticmethod
+    def string_add_seperator(text, n=5, sep=' '):
+        result = ''
+        first = True
+
+        while text:
+            if not first: result += sep
+            else: first = False
+
+            result += text[:n]
+            text = text[n:]
+
+        return result
+
+    @staticmethod
+    def vigenere_standard(text, key, opt):
+        temp_text = clear_text(text).upper()
+        new_key = generate_key_repeat(text, key).upper()
+        new_text = ""
+
+        # opt = 0 --> encrypt, opt = 1 --> decrypt
+        if(opt == 0):
+            for char, key in zip(temp_text, new_key):
+                new_text += chr(65 + (ord(char)+ord(key)) % 26)
+        else:
+            for char, key in zip(temp_text, new_key):
+                new_text += chr(65 + (ord(char)-ord(key)) % 26)
+            new_text = new_text.lower()
+        return new_text
+
+    @staticmethod
+    def vigenere_full(text, key, opt):
         temp_text = clear_text(text).upper()
         new_key = generate_key_repeat(temp_text, key).upper()
-        # print(new_key)
-        save_file('temp_keystore.txt', new_key)
-        temp = vigenere_standard(text, key, opt) 
-        res = transpose_enc_dec(temp,new_key, new_key, opt)
-    else:
-        temp_text = clear_text(text).upper()
-        new_key = generate_key_repeat(temp_text, key).upper()
-        prev_key = load_plain_text('temp_keystore.txt')
-        print(prev_key)
-        temp_res = transpose_enc_dec(temp_text, new_key, prev_key, opt)
-        res = vigenere_standard(temp_res, key, opt)
-    return res
+        new_text = ""
+        # print(temp_text)
+        if(opt == 0):
+            keys = generate_full_vigenere_key()
+            temp = []
+            for item in keys:
+                temp_str = "".join(item)
+                temp.append(temp_str)
 
-def inverse_modulo(m, n):
-    for i in range(n):
-        if ( (m * i) % n == 1 ):
-            return i
+            rows = ""
+            for char, temp_key in zip(temp_text, new_key):
+                print(ord(temp_key)-65, ord(char)-65)
+                rows+= str(ord(temp_key)-65) + ";"
+                new_text += keys[ord(temp_key)-65][ord(char)-65]
+            print(rows)
+            print(new_text)
+            save_file('keystore.txt', rows + "," + ''.join(temp))
+        else:
+            temp = load_plain_text('keystore.txt').split(",")
+            keys = split_text(temp[1], 26)
+            key_rows = temp[0].split(";")[0:-1]
+            # print(key_rows)
+            # print(keys)
+            for char, temp_key in zip(temp_text, key_rows):
+                # print(keys[int(temp_key)])
+                idx = keys[int(temp_key)].index(char)
+                new_text += chr(idx+65)
+            print(new_text.lower())
+        return new_text
 
-def affine_cipher(text, key, opt):
-    res = ""
-    text = text.upper()
-    # print(text)
-    keys = key.split(" ")
-    if(opt == 0):
-        for i in range(len(text)):
-            if(text[i] != ' '):
-                res += chr(65 + ((ord(text[i])-65) * int(keys[0]) + int(keys[1])) % 26)
-            else:
-                res += ' '
-    else:
-        inv = inverse_modulo(int(keys[0]), 26)
-        # print(inv)
-        for i in range(len(text)):
-            # print(inv, ord(text[i])-65, keys[1], (inv * (ord(text[i])-65 - int(keys[1]))))
-            if(text[i] != ' '):
-                res += chr(65 + (inv * (ord(text[i])-65 - int(keys[1]))) % 26)
-            else:
-                res += ' '
-    return res.lower()
+    @staticmethod
+    def super_encrypt(text, key, opt):
+        res = ""
+        if(opt == 0):
+            temp_text = clear_text(text).upper()
+            new_key = generate_key_repeat(temp_text, key).upper()
+            # print(new_key)
+            save_file('temp_keystore.txt', new_key)
+            temp = Crypto().vigenere_standard(text, key, opt) 
+            res = transpose_enc_dec(temp,new_key, new_key, opt)
+        else:
+            temp_text = clear_text(text).upper()
+            new_key = generate_key_repeat(temp_text, key).upper()
+            prev_key = load_plain_text('temp_keystore.txt')
+            print(prev_key)
+            temp_res = transpose_enc_dec(temp_text, new_key, prev_key, opt)
+            res = Crypto().vigenere_standard(temp_res, key, opt)
+        return res
 
-def generate_auto_key(text, key):
-    new_key = key + text[:(len(text)-len(key))]
-    return new_key
+    @staticmethod
+    def affine_cipher(text, key, opt):
+        res = ""
+        text = text.upper()
+        # print(text)
+        keys = key.split(" ")
+        if(opt == 0):
+            for i in range(len(text)):
+                if(text[i] != ' '):
+                    res += chr(65 + ((ord(text[i])-65) * int(keys[0]) + int(keys[1])) % 26)
+                else:
+                    res += ' '
+        else:
+            inv = inverse_modulo(int(keys[0]), 26)
+            # print(inv)
+            for i in range(len(text)):
+                # print(inv, ord(text[i])-65, keys[1], (inv * (ord(text[i])-65 - int(keys[1]))))
+                if(text[i] != ' '):
+                    res += chr(65 + (inv * (ord(text[i])-65 - int(keys[1]))) % 26)
+                else:
+                    res += ' '
 
-def auto_key_vigenere(text, key, opt):
-    text = clear_text(text).upper()
-    new_text = ""
+        return res.lower()
 
-    # opt = 0 --> encrypt, opt = 1 --> decrypt
-    if(opt == 0):
-        new_key = generate_auto_key(text, key)
-        for char, key in zip(text, new_key):
-            new_text += chr(65 + (ord(char)+ord(key)) % 26)
-        save_file('temp_key.txt', new_key)
-    else:
-        new_key = load_plain_text('temp_key.txt')
-        for char, key in zip(text, new_key):
-            new_text += chr(65 + (ord(char)-ord(key)) % 26)
-        new_text = new_text.lower()
-    return new_text
+    @staticmethod
+    def auto_key_vigenere(text, key, opt):
+        text = clear_text(text).upper()
+        new_text = ""
+
+        # opt = 0 --> encrypt, opt = 1 --> decrypt
+        if(opt == 0):
+            new_key = generate_auto_key(text, key)
+            for char, key in zip(text, new_key):
+                new_text += chr(65 + (ord(char)+ord(key)) % 26)
+            save_file('temp_key.txt', new_key)
+        else:
+            new_key = load_plain_text('temp_key.txt')
+            for char, key in zip(text, new_key):
+                new_text += chr(65 + (ord(char)-ord(key)) % 26)
+            new_text = new_text.lower()
+        return new_text
 
 if __name__ == "__main__":
     # temp = load_plain_text("README.md")
@@ -439,7 +581,4 @@ if __name__ == "__main__":
     # print(generate_full_vigenere_key())
     # vigenere_full("OXAU", "temp", 1)
     # print(super_encrypt("MIIEEIIMMZ", "temp", 1))
-    # print(affine_cipher("hkzo oxo oxfkh","7 10",1))
-    # extended_vigenere_encrypt("tes.jpg", "temp")
-    # extended_vigenere_decrypt("tes.jpg", "temp")
-    print(auto_key_vigenere("VRJOEEVEEGWEFOSMAVJMS", "INDO", 1))
+    # print(Crypto().affine_cipher("hkzo oxo oxfkh","7 10",1))
