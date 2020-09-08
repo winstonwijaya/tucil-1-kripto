@@ -9,9 +9,9 @@ from kivy.graphics import Color, Rectangle
 from kivy.lang import Builder
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.behaviors import ToggleButtonBehavior
-from main import Crypto
+from crypto import Crypto
 
-Builder.load_file('./Tucil-1.kv')
+Builder.load_file('./GUI.kv')
 
 class FileChoosePopup(Popup):
     load = ObjectProperty()
