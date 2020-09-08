@@ -1,0 +1,163 @@
+<RootWidget>:
+    # LEFT SIDE
+
+    ## UPPER ROW
+    Button:
+        text: 'Choose File'
+        size_hint: (0.2, 0.06)
+        pos_hint: {'x':0.05, 'y':0.9}
+        on_press: root.handleChooseFile()
+    Button:
+        id: file_path
+        text: 'No Chosen File...'
+        size_hint: (0.4, 0.06)
+        pos_hint: {'x':0.25, 'y':0.9}
+        disabled: True
+        color: (1, 1, 1, 2)
+
+    ## INPUT ROW
+    Button:
+        text: 'Input :'
+        size_hint: (0.6, 0.075)
+        pos_hint: {'x':0.05, 'y':0.825}
+        disabled: True
+        color: (1, 1, 1, 2)
+    TextInput:
+        id: input_text
+        multiline: True
+        size_hint: (0.6, 0.325)
+        pos_hint: {'x':0.05, 'y':0.5}
+        background_color: (0.5,0.5,0.5,0.5)
+        foreground_color: (1,1,1,1)
+
+    ## KEY ROW
+    Button:
+        text: 'Key :'
+        size_hint: (0.1, 0.1)
+        pos_hint: {'x':0.05, 'y':0.4}
+        disabled: True
+        color: (1, 1, 1, 2)
+    TextInput:
+        id: key_text
+        multiline: True
+        size_hint: (0.4, 0.1)
+        pos_hint: {'x':0.15, 'y':0.4}
+        background_color: (0.5,0.5,0.5,0.5)
+        foreground_color: (1,1,1,1)
+    Button:
+        text: 'Encrypt'
+        size_hint: (0.1, 0.05)
+        pos_hint: {'x':0.55, 'y':0.45}
+        on_press: root.handleEncrypt(input_text.text)
+    Button:
+        text: 'Decrypt'
+        size_hint: (0.1, 0.05)
+        pos_hint: {'x':0.55, 'y':0.4}
+        on_press: root.handleDecrypt(input_text.text)
+
+    ## RESULT ROW
+    Button:
+        text: 'Result :'
+        size_hint: (0.6, 0.075)
+        pos_hint: {'x':0.05, 'y':0.325}
+        disabled: True
+        color: (1, 1, 1, 2)
+    TextInput:
+        id: result_text
+        multiline: True
+        size_hint: (0.6, 0.275)
+        pos_hint: {'x':0.05, 'y':0.05}
+        background_color: (0.5,0.5,0.5,0.5)
+        disabled_foreground_color: (1,1,1,1)
+        disabled: True
+
+    # RIGHT SIDE
+    Button:
+        size_hint: (0.3, 0.91)
+        pos_hint: {'x':0.65, 'y':0.05}
+        disabled: True
+        color: (1, 1, 1, 2)
+
+    ToggleButton:
+        id: radio_0
+        text: 'Standard Vigenere Cipher'
+        group: 'cipher_type'
+        size_hint: (0.25, 0.06)
+        pos_hint: {'x':0.675, 'y':0.85}
+        on_press: root.handleRadio(0)
+        state: 'down'
+    ToggleButton:
+        id: radio_1
+        text: 'Full Vigenere Cipher'
+        group: 'cipher_type'
+        size_hint: (0.25, 0.06)
+        pos_hint: {'x':0.675, 'y':0.75}
+        on_press: root.handleRadio(1)
+    ToggleButton:
+        id: radio_2
+        text: 'Auto-Key Vigenere Cipher'
+        group: 'cipher_type'
+        size_hint: (0.25, 0.06)
+        pos_hint: {'x':0.675, 'y':0.65}
+        on_press: root.handleRadio(2)
+    ToggleButton:
+        id: radio_3
+        text: 'Extended Vigenere Cipher'
+        group: 'cipher_type'
+        size_hint: (0.25, 0.06)
+        pos_hint: {'x':0.675, 'y':0.55}
+        on_press: root.handleRadio(3)
+    ToggleButton:
+        id: radio_4
+        text: 'Playfair Cipher'
+        group: 'cipher_type'
+        size_hint: (0.25, 0.06)
+        pos_hint: {'x':0.675, 'y':0.45}
+        on_press: root.handleRadio(4)
+    ToggleButton:
+        id: radio_5
+        text: 'Super Encrypt'
+        group: 'cipher_type'
+        size_hint: (0.25, 0.06)
+        pos_hint: {'x':0.675, 'y':0.35}
+        on_press: root.handleRadio(5)
+    ToggleButton:
+        id: radio_6
+        text: 'Affine Cipher'
+        group: 'cipher_type'
+        size_hint: (0.25, 0.06)
+        pos_hint: {'x':0.675, 'y':0.25}
+        on_press: root.handleRadio(6)
+    ToggleButton:
+        id: radio_7
+        text: 'Hill Cipher'
+        group: 'cipher_type'
+        size_hint: (0.25, 0.06)
+        pos_hint: {'x':0.675, 'y':0.15}
+        on_press: root.handleRadio(7)
+
+
+
+<FileChoosePopup>:
+    title: "Choose File"
+    size_hint: .7, .7
+    auto_dismiss: False
+
+    BoxLayout:
+        orientation: "vertical"
+        FileChooser:
+            id: filechooser
+            FileChooserIconLayout
+
+        BoxLayout:
+            size_hint: (1, 0.1)
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            spacing: 20
+            Button:
+                text: "Cancel"
+                on_release: root.dismiss()
+            Button:
+                text: "Load"
+                on_release: root.load(filechooser.selection)
+                id: ldbtn
+                disabled: True if filechooser.selection==[] else False
