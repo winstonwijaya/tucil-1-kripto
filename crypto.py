@@ -67,10 +67,6 @@ def alpha_to_num(value):
 def num_to_alpha(value):
     return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[value]
 
-def vigenere_running(text, opt):
-    key = load_plain_text('pembukaanUUD1945.txt')
-    return vigenere_standard(text, key, opt)
-
 def split_text(text, length):
     result = []
 
@@ -568,3 +564,4 @@ if __name__ == "__main__":
     # vigenere_full("OXAU", "temp", 1)
     # print(super_encrypt("MIIEEIIMMZ", "temp", 1))
     # print(Crypto().affine_cipher("hkzo oxo oxfkh","7 10",1))
+    pass
