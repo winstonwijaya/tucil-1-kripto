@@ -536,7 +536,9 @@ class Crypto():
         for char, key in zip(temp_text, new_key):
             new_text += ( chr((ord(char)+ord(key)) % 256) )
         save_file('temp_key.txt', new_key)
-        save_binary(filename, new_text)
+        save_file_name = filename.split('.')
+        save_file_name = save_file_name[0] + '_encrypt.' + save_file_name[1]
+        save_binary(save_file_name, new_text)
 
     @staticmethod
     def extended_vigenere_decrypt(filename, key):
@@ -546,7 +548,10 @@ class Crypto():
 
         for char, key in zip(temp_text, new_key):
             new_text += ( chr((ord(char)-ord(key)) % 256) )
-        save_binary(filename, new_text)
+
+        save_file_name = filename.split('.')
+        save_file_name = save_file_name[0] + '_decrypt.' + save_file_name[1]
+        save_binary(save_file_name, new_text)
 
 
 

@@ -79,6 +79,10 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
     # ENCRYPT
     def handleEncrypt(self, input_text, key):
         result = ''
+        if self.radio_selected == 3: input_text='a'
+        if not input_text or not key:
+            self.ids.result_text.text = 'NEED INPUT TEXT AND/OR KEY'
+            return
 
         # STANDARD VIGENERE CIPHER
         if self.radio_selected == 0:
@@ -94,7 +98,11 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
 
         # EXTENDED VIGENERE CIPHER
         elif self.radio_selected == 3:
-            result = Crypto().extended_vigenere_encrypt(input_text,key)
+            if not self.file_path:
+                result = 'NEED TO CHOOSE FILE'
+            else:
+                Crypto().extended_vigenere_encrypt(self.file_path,key)
+                result = 'File encrypted and saved'
 
         # PLAYFAIR CIPHER
         elif self.radio_selected == 4:
@@ -120,6 +128,10 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
     # DECRYPT
     def handleDecrypt(self, input_text, key):
         result = ''
+        if self.radio_selected == 3: input_text='a'
+        if not input_text or not key:
+            self.ids.result_text.text = 'NEED INPUT TEXT AND/OR KEY'
+            return
 
         # STANDARD VIGENERE CIPHER
         if self.radio_selected == 0:
@@ -135,7 +147,11 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
 
         # EXTENDED VIGENERE CIPHER
         elif self.radio_selected == 3:
-            result = Crypto().extended_vigenere_decrypt(input_text,key)
+            if not self.file_path:
+                result = 'NEED TO CHOOSE FILE'
+            else:
+                Crypto().extended_vigenere_decrypt(self.file_path,key)
+                result = 'File decrypted and saved'
 
         # PLAYFAIR CIPHER
         elif self.radio_selected == 4:
