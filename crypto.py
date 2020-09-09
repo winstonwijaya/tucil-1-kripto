@@ -580,3 +580,4 @@ if __name__ == "__main__":
     # vigenere_full("OXAU", "temp", 1)
     # print(super_encrypt("MIIEEIIMMZ", "temp", 1))
     # print(Crypto().affine_cipher("hkzo oxo oxfkh","7 10",1))
+    pass

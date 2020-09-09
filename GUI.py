@@ -9,12 +9,19 @@ from kivy.graphics import Color, Rectangle
 from kivy.lang import Builder
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.behaviors import ToggleButtonBehavior
+
 from crypto import Crypto
+import os
 
 Builder.load_file('./GUI.kv')
 
+initial_dir = os.getcwd()
+
 class FileChoosePopup(Popup):
     load = ObjectProperty()
+
+    def getPath(self):
+        return initial_dir
 
 class RootWidget(ToggleButtonBehavior, FloatLayout):
     def __init__(self,**kwargs):
@@ -30,19 +37,44 @@ class RootWidget(ToggleButtonBehavior, FloatLayout):
         self.popup.open()
 
     def handleSave(self):
-        pass
+        f = open(initial_dir + '\\result.txt', 'w')
+        f.write(self.ids.result_text.text)
+        f.close()
 
-    # NEED HANDLE LOAD FILE USING FILE_PATH
-    # AFTER, CHANGE INPUT TEXT AND ENCRYPT IT
     def load(self, selection):
         self.file_path = str(selection[0])
         self.popup.dismiss()
-        self.ids.file_path.text = self.file_path
+
+        display = ''
+        if len(self.file_path)>40:
+            display = '...' + self.file_path[len(self.file_path)-30:]
+        else:
+            display = self.file_path
+        self.ids.file_path.text = display
         
-        f = open(self.file_path)
-        [content,key] = f.readlines()
-        self.ids.input_text.text = content
-        self.ids.key_text.text = key
+        if self.file_path.count('.txt'):
+            f = open(self.file_path, 'r')
+            f_content = f.readlines()
+            f.close()
+            content = ''
+            key = ''
+            for i in range(len(f_content)-1):
+                if i: content += '. '
+                content += f_content[i].replace('\n','')
+            key = f_content[-1]
+            self.ids.input_text.text = content
+            self.ids.key_text.text = key
+        else:
+            self.handleRadio(3)
+            self.ids.radio_0.state = 'normal'
+            self.ids.radio_1.state = 'normal'
+            self.ids.radio_2.state = 'normal'
+            self.ids.radio_3.state = 'down'
+            self.ids.radio_4.state = 'normal'
+            self.ids.radio_5.state = 'normal'
+            self.ids.radio_6.state = 'normal'
+            self.ids.radio_7.state = 'normal'
+
 
     # ENCRYPT
     def handleEncrypt(self, input_text, key):
