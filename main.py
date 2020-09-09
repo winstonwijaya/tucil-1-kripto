@@ -2,6 +2,7 @@ import numpy as np
 import random
 import re
 import string
+import binascii
 
 # matrix for full vigene cipher --> save to external file
 # full_chip_matrix = np.empty((26,26))
@@ -14,58 +15,6 @@ def load_plain_text(filename):
     with open(filename) as files:
         text = files.read() 
     return text
-
-def load_binary(filename):
-    text = []
-    with open (filename, 'rb') as files:
-        byte = files.read(1)
-        while byte:
-            byte = files.read(1)
-            text.append(byte)
-            # print(byte)
-    res = []
-    for item in text:
-        res.append(item.decode('unicode_escape', 'replace'))
-    print(res)
-    return res
-
-def save_binary(filename, text):
-    new_text = []
-    for item in text:
-        # print(item)
-        new_text.append(item.encode('unicode_escape', 'replace'))
-    print(new_text)
-    with open (filename, 'wb') as files:
-        for item in new_text:
-            files.write(item)
-
-def extended_vigenere_encrypt(filename, key):
-    temp_text = load_binary(filename)
-    new_key = generate_key_repeat(temp_text, key)
-    new_text = []
-    
-    for char, key in zip(temp_text, new_key):
-        new_text.append( chr((ord(char)+ord(key)) % 256) if(char != '') else '' )
-    # temp2 = []
-    # for char, key in zip(new_text, new_key):
-    #     temp2.append( chr((ord(char)-ord(key)) % 256) if(char != '') else '' )
-    # save_file('temp_key.txt', new_key)
-    save_binary(filename, new_text)
-    test = load_binary(filename)
-    print(test)
-    
-    # print(temp2)
-
-def extended_vigenere_decrypt(filename, key):
-    temp_text = load_binary(filename)
-    new_key = load_plain_text('temp_key.txt')
-    new_text = []
-    for char, key in zip(temp_text, new_key):
-        new_text.append( chr((ord(char)-ord(key))) % 256 if(char != '') else '' )
-    res = new_text[:-1]
-    res.append('')
-    # save_binary(filename, new_text)
-    print(res)
 
 def save_file(filename, text):
     with open(filename, 'w') as files:
@@ -277,6 +226,16 @@ def generate_auto_key(text, key):
     new_key = key + text[:(len(text)-len(key))]
     return new_key
 
+def load_binary(filename):
+    text = ""
+    with open (filename, 'rb') as files:
+        byte = files.read()
+        text = byte.decode('iso8859-1')
+    return text
+
+def save_binary(filename, text):
+    with open (filename, 'wb') as files:
+        files.write(text.encode('iso8859-1'))
 
 class Crypto():
     @staticmethod
@@ -572,10 +531,37 @@ class Crypto():
             new_text = new_text.lower()
         return new_text
 
+    @staticmethod
+    def extended_vigenere_encrypt(filename, key):
+        temp_text = load_binary(filename)
+        new_key = generate_key_repeat(temp_text, key)
+        new_text = ""
+        
+        for char, key in zip(temp_text, new_key):
+            new_text += ( chr((ord(char)+ord(key)) % 256) )
+        save_file('temp_key.txt', new_key)
+        save_binary(filename, new_text)
+
+    @staticmethod
+    def extended_vigenere_decrypt(filename, key):
+        temp_text = load_binary(filename)
+        new_key = load_plain_text('temp_key.txt')
+        new_text = ""
+
+        for char, key in zip(temp_text, new_key):
+            new_text += ( chr((ord(char)-ord(key)) % 256) )
+        save_binary(filename, new_text)
+
+
+
+
+
 if __name__ == "__main__":
     # temp = load_plain_text("README.md")
     # print(temp)
 
+    # extended_vigenere_encrypt('Tucil-1-Sem1-2020-2021.pdf', 'temp')
+    # extended_vigenere_decrypt('Tucil-1-Sem1-2020-2021.pdf', 'temp')
     # print(vigenere_standard("thisplaintext", "sonysonysonys", 0))
     # print(generate_key_repeat("testtests", "test"))
     # print(generate_full_vigenere_key())
